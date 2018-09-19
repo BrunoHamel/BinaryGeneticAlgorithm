@@ -28,7 +28,7 @@ class Chromosome:
 
         return child_1, child_2
 
-    def mutate(self, chance_of_mutation: float = 0.09) -> 'Chromosome':
+    def mutate(self, chance_of_mutation: float) -> 'Chromosome':
         child = Chromosome.copy(self)
         for i, v in enumerate(child.genes):
             if random.uniform(0, 1) <= chance_of_mutation:

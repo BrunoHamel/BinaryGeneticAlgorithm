@@ -1,13 +1,15 @@
 import random
 
+import matplotlib.pyplot as plt
+
 from chromosome import Chromosome
 from population import Population
 
-POPULATION_SIZE = 10
-GENES_COUNT = 20
+POPULATION_SIZE = 15
+GENES_COUNT = 40
 ELITISM_RATE = 0.2
-MUTATION_RATE = 0.09
-MAX_GENERATION = 100
+MUTATION_RATE = 0.001
+MAX_GENERATION = 1000
 BEST_FITNESS = 1.0
 
 
@@ -23,7 +25,12 @@ def fitness(chromosome: Chromosome) -> float:
 population = Population(fitness, POPULATION_SIZE, GENES_COUNT)
 generation = 1
 
-while generation <= MAX_GENERATION and not terminal_condition():
+average_fitness = []
+best_fitness = []
+mid_fitness = []
+worst_fitness = []
+
+while generation < MAX_GENERATION and not terminal_condition():
     population.sort()
 
     # Elites
@@ -43,10 +50,15 @@ while generation <= MAX_GENERATION and not terminal_condition():
     for i, v in enumerate(crossed_chromosomes):
         crossed_chromosomes[i] = v.mutate(MUTATION_RATE)
 
+    # Save generation values
+    average_fitness.append(population.average_fitness())
+    best_fitness.append(population.chromosomes[0].fitness())
+    mid_fitness.append(population.chromosomes[int(len(population.chromosomes) / 2)].fitness())
+    worst_fitness.append(population.chromosomes[-1].fitness())
+
     print(f'------- Generation {generation} -------')
     print(f'Average fitness:\t{population.average_fitness()} / {BEST_FITNESS}')
     print(f'Best:\t\t\t\t{population.chromosomes[0]}')
-    print(f'Mid:\t\t\t\t{population.chromosomes[int(len(population.chromosomes)/2)]}')
     print(f'Worst:\t\t\t\t{population.chromosomes[-1]}')
     print(f'Number of elites:\t{elite_count}')
     print(f'Crossover count:\t{crossover_count} pair')
@@ -61,3 +73,12 @@ while generation <= MAX_GENERATION and not terminal_condition():
 population.sort()
 fittest = population.chromosomes[0]
 print(f'** Generation {generation} has the best chromosome {fittest} with a fitness of {fittest.fitness()}')
+
+plt.plot(range(generation - 1), average_fitness)
+plt.plot(range(generation - 1), best_fitness)
+plt.plot(range(generation - 1), worst_fitness)
+plt.legend(['Average', 'Best', 'Worst'])
+plt.title('Fitness to generation')
+plt.xlabel('Generation')
+plt.ylabel('Fitness')
+plt.show()
