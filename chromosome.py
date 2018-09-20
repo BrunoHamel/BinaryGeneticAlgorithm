@@ -2,11 +2,13 @@ import random
 from copy import copy
 from typing import Callable
 
+from constants import *
+
 
 class Chromosome:
 
     def __init__(self, fitness_func: Callable, genes_length=0):
-        self.genes = [random.getrandbits(1) for _ in range(genes_length)]
+        self.genes = [random.choice(MOVES) for _ in range(genes_length)]
         self.fitness_func = fitness_func
 
     @staticmethod
@@ -32,7 +34,7 @@ class Chromosome:
         child = Chromosome.copy(self)
         for i, v in enumerate(child.genes):
             if random.uniform(0, 1) <= chance_of_mutation:
-                child.genes[i] = int(not v)
+                child.genes[i] = random.choice(MOVES)
         return child
 
     def fitness(self) -> float:
