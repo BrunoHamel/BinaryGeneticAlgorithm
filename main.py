@@ -1,46 +1,55 @@
 import random
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from chromosome import Chromosome
+from constants import *
 from maze import Maze
 from population import Population
 
-maze = Maze([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-             [1, 2, 1, 1, 0, 1, 1, 1, 1, 1],
-             [1, 0, 1, 1, 0, 1, 1, 1, 1, 1],
-             [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-             [1, 1, 0, 1, 0, 1, 1, 0, 0, 1],
-             [1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-             [1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-             [1, 1, 0, 0, 0, 0, 0, 1, 1, 1],
-             [1, 1, 1, 1, 0, 1, 0, 1, 1, 1],
-             [1, 1, 1, 1, 0, 1, 0, 1, 1, 1],
-             [1, 1, 0, 1, 0, 1, 0, 1, 1, 1],
-             [1, 0, 0, 0, 0, 1, 0, 0, 1, 1],
-             [1, 0, 1, 1, 1, 1, 1, 0, 1, 1],
-             [1, 0, 1, 1, 1, 1, 1, 0, 1, 1],
-             [1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
-             [1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
-             [1, 0, 0, 0, 1, 0, 1, 1, 0, 1],
-             [1, 0, 1, 1, 1, 0, 0, 1, 0, 1],
-             [1, 1, 1, 1, 1, 1, 0, 1, 3, 1],
-             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+maze = Maze([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 0, 0, 0, 3, 1, 0, 0, 0, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 
-POPULATION_SIZE = 50
-GENES_COUNT = 40
-ELITISM_RATE = 0.05
-MUTATION_RATE = 0.02
+POPULATION_SIZE = 500
+GENES_COUNT = 25
+ELITISM_RATE = 0.01
+MUTATION_RATE = 0.1
 MAX_GENERATION = 50000
+
+number_of_empty = np.count_nonzero(maze.structure == EMPTY)
+max_distance = maze.flying_distance((0, 0), (len(maze.structure), len(maze.structure[0])))
 
 
 def terminal_condition() -> bool:
-    return any([maze.make_a_try(chromosome.genes)[0] for chromosome in population.chromosomes])
+    return False
 
 
 def fitness(chromosome: Chromosome) -> float:
     _, position, move_count = maze.make_a_try(chromosome.genes)
-    return maze.flying_distance_from_end(position)
+    distance_to_end = maze.flying_distance(position, maze.end)
+
+    if move_count == 0:
+        move_count = 1
+
+    fit = max_distance - distance_to_end + 2 ** (1 / move_count)
+
+    return fit
 
 
 # Initial population

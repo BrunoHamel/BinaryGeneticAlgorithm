@@ -9,7 +9,7 @@ class Population:
         self.chromosomes = [Chromosome(fitness_func, genes_length) for _ in range(size)]
 
     def sort(self) -> None:
-        self.chromosomes.sort(key=lambda c: c.fitness(), reverse=False)
+        self.chromosomes.sort(key=lambda c: c.fitness(), reverse=True)
 
     def __str__(self):
         return '\n'.join(([str(c) for c in self.chromosomes]))

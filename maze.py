@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 
@@ -61,10 +61,10 @@ class Maze:
 
         return self.structure[walker.row][walker.col] == END, walker.position, move_count
 
-    def flying_distance_from_end(self, position: Tuple[int]) -> int:
+    @staticmethod
+    def flying_distance(point_1, point_2) -> int:
         """
         Calculate distance between point to end
-        :param position: current position
         :return: distance
         """
-        return abs(position[0] - self.end[0]) + abs(position[1] - self.end[1])
+        return abs(point_1[0] - point_2[0]) + abs(point_1[1] - point_2[1])
