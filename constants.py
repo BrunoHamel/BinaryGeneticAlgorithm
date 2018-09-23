@@ -1,0 +1,12 @@
+WALL = 1
+EMPTY = 0
+START = 2
+END = 3
+POSSIBLE_VALUES = [EMPTY, WALL, START, END]
+
+DOWN = 'd'
+UP = 'u'
+LEFT = 'l'
+RIGHT = 'r'
+
+MOVES = [DOWN, UP, LEFT, RIGHT]

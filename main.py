@@ -1,24 +1,55 @@
 import random
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from chromosome import Chromosome
+from constants import *
+from maze import Maze
 from population import Population
 
-POPULATION_SIZE = 15
-GENES_COUNT = 40
-ELITISM_RATE = 0.2
-MUTATION_RATE = 0.001
-MAX_GENERATION = 1000
-BEST_FITNESS = 1.0
+maze = Maze([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+             [1, 0, 0, 0, 0, 3, 1, 0, 0, 0, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+
+POPULATION_SIZE = 500
+GENES_COUNT = 25
+ELITISM_RATE = 0.01
+MUTATION_RATE = 0.1
+MAX_GENERATION = 50000
+
+number_of_empty = np.count_nonzero(maze.structure == EMPTY)
+max_distance = maze.flying_distance((0, 0), (len(maze.structure), len(maze.structure[0])))
 
 
 def terminal_condition() -> bool:
-    return any([chromosome.fitness() >= BEST_FITNESS for chromosome in population.chromosomes])
+    return False
 
 
 def fitness(chromosome: Chromosome) -> float:
-    return sum(chromosome.genes) / len(chromosome.genes)
+    _, position, move_count = maze.make_a_try(chromosome.genes)
+    distance_to_end = maze.flying_distance(position, maze.end)
+
+    if move_count == 0:
+        move_count = 1
+
+    fit = max_distance - distance_to_end + 2 ** (1 / move_count)
+
+    return fit
 
 
 # Initial population
@@ -39,13 +70,14 @@ while generation < MAX_GENERATION and not terminal_condition():
 
     # Crossing
     crossed_chromosomes = []
-    crossover_count = int((POPULATION_SIZE - elite_count) / 2)
+    crossover_count = int((POPULATION_SIZE - elite_count) / 2) - elite_count
 
     for _ in range(crossover_count):
         parent_1, parent_2 = random.choices(population.chromosomes, k=2)
         crossed_chromosomes.extend(parent_1.cross(parent_2))
 
     # Mutation
+    mutated_elites = [elite.mutate(MUTATION_RATE) for elite in elite_chromosomes]
 
     for i, v in enumerate(crossed_chromosomes):
         crossed_chromosomes[i] = v.mutate(MUTATION_RATE)
@@ -56,19 +88,19 @@ while generation < MAX_GENERATION and not terminal_condition():
     mid_fitness.append(population.chromosomes[int(len(population.chromosomes) / 2)].fitness())
     worst_fitness.append(population.chromosomes[-1].fitness())
 
-    print(f'------- Generation {generation} -------')
-    print(f'Average fitness:\t{population.average_fitness()} / {BEST_FITNESS}')
-    print(f'Best:\t\t\t\t{population.chromosomes[0]}')
-    print(f'Worst:\t\t\t\t{population.chromosomes[-1]}')
-    print(f'Number of elites:\t{elite_count}')
-    print(f'Crossover count:\t{crossover_count} pair')
-    print(f'Mutation count:\t\t{len(crossed_chromosomes)}')
+    if generation % 100 == 0:
+        print(f'------- Generation {generation} -------')
+        print(f'Average fitness:\t{population.average_fitness()}')
+        print(f'Best:\t\t\t\t({population.chromosomes[0].fitness()}){population.chromosomes[0]}')
+        print(f'Worst:\t\t\t\t{population.chromosomes[-1]}')
+        print(f'Number of elites:\t{elite_count}')
+        print(f'Crossover count:\t{crossover_count} pair')
+        print(f'Mutation count:\t\t{len(crossed_chromosomes)}')
+        print('')
 
     # New generation
-    population.chromosomes = elite_chromosomes + crossed_chromosomes
+    population.chromosomes = elite_chromosomes + mutated_elites + crossed_chromosomes
     generation += 1
-
-    print('')
 
 population.sort()
 fittest = population.chromosomes[0]
