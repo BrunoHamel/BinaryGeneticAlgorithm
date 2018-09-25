@@ -8,7 +8,7 @@ from constants import *
 from maze import Maze
 from population import Population
 
-maze = Maze([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+"""maze = Maze([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
              [1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1],
              [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
              [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
@@ -16,18 +16,23 @@ maze = Maze([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
              [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
              [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
              [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-             [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-             [1, 0, 0, 0, 0, 3, 1, 0, 0, 0, 1],
-             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+             [1, 1, 3, 0, 0, 0, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])"""
+maze = Maze.load(2)
 
-POPULATION_SIZE = 500
-GENES_COUNT = 25
+print(maze.structure)
+
+exit()
+
+GENES_COUNT = 15
+POPULATION_SIZE = GENES_COUNT * 10
 ELITISM_RATE = 0.01
 MUTATION_RATE = 0.1
 MAX_GENERATION = 50000
@@ -44,12 +49,7 @@ def fitness(chromosome: Chromosome) -> float:
     _, position, move_count = maze.make_a_try(chromosome.genes)
     distance_to_end = maze.flying_distance(position, maze.end)
 
-    if move_count == 0:
-        move_count = 1
-
-    fit = max_distance - distance_to_end + 2 ** (1 / move_count)
-
-    return fit
+    return max_distance - distance_to_end + 2 ** (1 / (move_count or 1))
 
 
 # Initial population
@@ -88,7 +88,11 @@ while generation < MAX_GENERATION and not terminal_condition():
     mid_fitness.append(population.chromosomes[int(len(population.chromosomes) / 2)].fitness())
     worst_fitness.append(population.chromosomes[-1].fitness())
 
-    if generation % 100 == 0:
+    # New generation
+    population.chromosomes = elite_chromosomes + mutated_elites + crossed_chromosomes
+    generation += 1
+
+    if generation % 20 == 0:
         print(f'------- Generation {generation} -------')
         print(f'Average fitness:\t{population.average_fitness()}')
         print(f'Best:\t\t\t\t({population.chromosomes[0].fitness()}){population.chromosomes[0]}')
@@ -98,9 +102,9 @@ while generation < MAX_GENERATION and not terminal_condition():
         print(f'Mutation count:\t\t{len(crossed_chromosomes)}')
         print('')
 
-    # New generation
-    population.chromosomes = elite_chromosomes + mutated_elites + crossed_chromosomes
-    generation += 1
+        go = input('Keep going? (y/n)[y]')
+        if go == 'n':
+            break
 
 population.sort()
 fittest = population.chromosomes[0]

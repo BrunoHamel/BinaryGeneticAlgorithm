@@ -68,3 +68,14 @@ class Maze:
         :return: distance
         """
         return abs(point_1[0] - point_2[0]) + abs(point_1[1] - point_2[1])
+
+    @staticmethod
+    def load(index: int) -> 'Maze':
+        with open('mazes.data', 'r') as f:
+            lines = [line.rstrip() for line in f.readlines()]
+
+        indices = [0] + [i for i, v in enumerate(lines) if v == '-'] + [len(lines) - 1]
+        maze_lines = lines[indices[index]:indices[index + 1] + 1]
+        maze_lines = list(filter(lambda a: a != '-', maze_lines))
+        maze_lines = [[int(char) for char in list(row)] for row in maze_lines]
+        return Maze(maze_lines)
